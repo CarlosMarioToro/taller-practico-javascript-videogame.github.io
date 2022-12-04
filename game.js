@@ -4,6 +4,7 @@ const btnUp = document.querySelector('#up');
 const btnLeft= document.querySelector('#left');
 const btnRight = document.querySelector('#right');
 const btnDown = document.querySelector('#down');
+const spanLives = document.querySelector('#lives')
 
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
@@ -14,12 +15,20 @@ btnDown.addEventListener("click", moveDown);
 
 let canvasSize;
 let elementsSize;
-let indicator = true;
+let level = 0;
+let lives = 3;
+
+let bombPosition = [];
+
+giftPosition = {
+    x: undefined,
+    y: undefined,
+};
 
 const playerPosition = {
     x: undefined,
     y: undefined,
-}
+};
 
 function setCanvasSize() {
     canvasSize = Math.min(window.innerHeight, window.innerWidth) * 0.8;
@@ -33,13 +42,22 @@ function setCanvasSize() {
 }
 
 function startGame() {
-    console.log({ canvasSize, elementsSize });
+    const map = maps[level];
 
-    const mapRows = maps[0].trim().split('\n');
+    if (!map) {
+        gameWin();
+        return;
+    }
+    const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
+
+    showLives();
 
     game.font = (elementsSize * 0.9) + 'px Verdana';
     game.textAlign = 'end';
+    
+    bombPosition = [];
+    game.clearRect(0, 0, canvasSize, canvasSize); 
 
     mapRowCols.forEach((row, rowI) => {
         row.forEach((col, colI) => {
@@ -47,12 +65,21 @@ function startGame() {
             const posX = elementsSize * (colI + 1) + 3;
             const posY = elementsSize * (rowI + 1) - 7;
 
-            if (col == 'O' && indicator == true) {
-                playerPosition.x = posX;
-                playerPosition.y = posY;
-                indicator = false;
+            if (col == 'O') {
+                if (!playerPosition.x && !playerPosition.y) {
+                    playerPosition.x = posX;
+                    playerPosition.y = posY;                    
+                }
+            } else if (col == 'I') {
+                giftPosition.x = posX;
+                giftPosition.y = posY;
+            } else if (col == 'X') {
+                bombPosition.push({
+                    x: posX,
+                    y: posY,
+                })
             }
-
+            
             game.fillText(emoji, posX, posY)     
         });
     });
@@ -60,7 +87,57 @@ function startGame() {
 }
 
 function movePlayer() {
+    const giftCollisionX = playerPosition.x.toFixed(3) == giftPosition.x.toFixed(3);    
+    const giftCollisionY = playerPosition.y.toFixed(3) == giftPosition.y.toFixed(3);    
+    const giftCollision = giftCollisionX && giftCollisionY;
+
+    if (giftCollision) {
+        levelWin();
+    }
+
+    const bombCollision = bombPosition.find(bomb => {
+        const bombCollisionX = bomb.x.toFixed(3) == playerPosition.x.toFixed(3);
+        const bombCollisionY = bomb.y.toFixed(3) == playerPosition.y.toFixed(3);
+        return bombCollisionX && bombCollisionY;
+    });
+
+    if (bombCollision) {
+        levelFail();
+    }
+
     game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
+}
+
+function levelWin() {
+    level++;
+    startGame();
+}
+
+function levelFail () {
+    lives--;
+
+    if (lives <= 0) {
+        level = 0;
+        lives = 3;
+    }
+    playerPosition.x = undefined;
+    playerPosition.y = undefined;
+    startGame();
+}
+
+function gameWin() {
+    console.log('Terminaste el juego!!!');
+}
+
+function showLives() {
+    const heartsArray =  Array(lives).fill(emojis['HEART']);
+    console.log({heartsArray});
+
+    spanLives.innerHTML = '';
+
+    for (heart of heartsArray) {
+        spanLives.innerHTML += heart;
+    }
 }
 
 window.addEventListener("keydown", (e) => {
@@ -89,43 +166,31 @@ window.addEventListener("keydown", (e) => {
 });
 
 function moveUp() {
-    clearGame();
     if ((playerPosition.y - elementsSize - 4) > 0) {
         playerPosition.y -= elementsSize;        
     }
     startGame();
-    movePlayer();  
 }
 
 function moveLeft() {
-    clearGame();
     if ((playerPosition.x - elementsSize - 4) > 0) {
         playerPosition.x -= elementsSize;        
     }
     startGame();
-    movePlayer();
 }
 
 function moveRight() {
-    clearGame();
     if ((playerPosition.x + elementsSize - 4) < canvasSize) {
         playerPosition.x += elementsSize;        
     }
     startGame();
-    movePlayer();
 }
 
 function moveDown() {
-    clearGame();
     if ((playerPosition.y + elementsSize - 4) < canvasSize) {
         playerPosition.y += elementsSize;        
     }
     startGame();
-    movePlayer();
-}
-
-function clearGame() {
-    game.clearRect(0, 0, canvasSize, canvasSize); 
 }
 
 
@@ -141,7 +206,6 @@ function clearGame() {
     // game.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     // let numeroDeFilas = 10;
     // let square = canvas.clientWidth / numeroDeFilas;
-    // console.log(square);
     // for (let x = 0; x < numeroDeFilas; x++) {
     //     for (let y = 0; y < numeroDeFilas; y++) {
     //         if (x % 2 == 0) {
