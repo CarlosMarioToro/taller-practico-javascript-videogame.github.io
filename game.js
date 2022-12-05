@@ -5,6 +5,7 @@ const btnLeft= document.querySelector('#left');
 const btnRight = document.querySelector('#right');
 const btnDown = document.querySelector('#down');
 const spanLives = document.querySelector('#lives')
+const spanTime = document.querySelector('#time')
 
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
@@ -17,6 +18,11 @@ let canvasSize;
 let elementsSize;
 let level = 0;
 let lives = 3;
+
+let timeStart;
+let timePlayer;
+let timeInterval;
+
 
 let bombPosition = [];
 
@@ -48,9 +54,16 @@ function startGame() {
         gameWin();
         return;
     }
+
+    if (!timeStart) {
+        timeStart = Date.now();
+        timeInterval = setInterval(showTime, 100);
+    }
+
     const mapRows = map.trim().split('\n');
     const mapRowCols = mapRows.map(row => row.trim().split(''));
 
+    console.log('startGame', lives);
     showLives();
 
     game.font = (elementsSize * 0.9) + 'px Verdana';
@@ -102,6 +115,7 @@ function movePlayer() {
     });
 
     if (bombCollision) {
+        console.log(bombCollision);
         levelFail();
     }
 
@@ -110,6 +124,11 @@ function movePlayer() {
 
 function levelWin() {
     level++;
+    // if (level == maps.length) {
+    //     level = 0;
+    //     lives++;
+    //     console.log('entre levelWin');
+    // }
     startGame();
 }
 
@@ -119,7 +138,9 @@ function levelFail () {
     if (lives <= 0) {
         level = 0;
         lives = 3;
+        timeStart = undefined;
     }
+    console.log('entre levelFail');
     playerPosition.x = undefined;
     playerPosition.y = undefined;
     startGame();
@@ -127,6 +148,7 @@ function levelFail () {
 
 function gameWin() {
     console.log('Terminaste el juego!!!');
+    clearInterval(timeInterval);
 }
 
 function showLives() {
@@ -138,6 +160,20 @@ function showLives() {
     for (heart of heartsArray) {
         spanLives.innerHTML += heart;
     }
+}
+
+function showTime() {
+    function addZ(n) {
+	    return (n<10? '0':'') + n;
+	  }
+
+    var ms = (Date.now() - timeStart) % 1000;
+    s = ((Date.now() - timeStart) - ms) / 1000;
+    var secs = s % 60;
+    s = (s - secs) / 60;
+    var mins = s % 60;
+    var hrs = (s - mins) / 60;
+    spanTime.innerHTML = addZ(hrs) + ':' + addZ(mins) + ':' + addZ(secs)+ '.' + addZ(ms);
 }
 
 window.addEventListener("keydown", (e) => {
