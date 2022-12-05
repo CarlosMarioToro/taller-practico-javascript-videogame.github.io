@@ -4,8 +4,10 @@ const btnUp = document.querySelector('#up');
 const btnLeft= document.querySelector('#left');
 const btnRight = document.querySelector('#right');
 const btnDown = document.querySelector('#down');
-const spanLives = document.querySelector('#lives')
-const spanTime = document.querySelector('#time')
+const spanLives = document.querySelector('#lives');
+const spanTime = document.querySelector('#time');
+const spanRecord = document.querySelector('#record');
+const pResult = document.querySelector('#result');
 
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
@@ -58,6 +60,7 @@ function startGame() {
     if (!timeStart) {
         timeStart = Date.now();
         timeInterval = setInterval(showTime, 100);
+        showRecord();
     }
 
     const mapRows = map.trim().split('\n');
@@ -149,6 +152,21 @@ function levelFail () {
 function gameWin() {
     console.log('Terminaste el juego!!!');
     clearInterval(timeInterval);
+    
+    const playerTime = Date.now() - timeStart;
+    const recordTime = localStorage.getItem('record_time');
+
+    if (recordTime) {
+        if (recordTime >= playerTime) {
+            localStorage.setItem('record_time', playerTime);
+            pResult.innerHTML = 'SUPERASTE EL RECORD';
+        } else {
+            pResult.innerHTML = 'lo siento, no superaste el record :(';
+        }
+    } else {
+        localStorage.setItem('record_time', playerTime);
+        pResult.innerHTML = 'Primera vez? Muy bien, pero ahora trata de superar tu tiempo :)';
+    }
 }
 
 function showLives() {
@@ -164,8 +182,8 @@ function showLives() {
 
 function showTime() {
     function addZ(n) {
-	    return (n<10? '0':'') + n;
-	  }
+        return (n<10? '0':'') + n;
+    }
 
     var ms = (Date.now() - timeStart) % 1000;
     s = ((Date.now() - timeStart) - ms) / 1000;
@@ -174,6 +192,20 @@ function showTime() {
     var mins = s % 60;
     var hrs = (s - mins) / 60;
     spanTime.innerHTML = addZ(hrs) + ':' + addZ(mins) + ':' + addZ(secs)+ '.' + addZ(ms);
+}
+
+function showRecord() {
+    function addZ(n) {
+        return (n<10? '0':'') + n;
+    }
+
+    var ms = localStorage.getItem('record_time') % 1000;
+    s = (localStorage.getItem('record_time') - ms) / 1000;
+    var secs = s % 60;
+    s = (s - secs) / 60;
+    var mins = s % 60;
+    var hrs = (s - mins) / 60;
+    spanRecord.innerHTML = addZ(hrs) + ':' + addZ(mins) + ':' + addZ(secs)+ '.' + addZ(ms);
 }
 
 window.addEventListener("keydown", (e) => {
