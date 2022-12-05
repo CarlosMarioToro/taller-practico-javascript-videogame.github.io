@@ -47,12 +47,13 @@ const playerPositionRowCol = {
 function setCanvasSize() {
     canvasSize = Math.min(window.innerHeight, window.innerWidth) * 0.7;
 
-    console.log({playerPosition});
+    canvasSize = Number(canvasSize.toFixed(2));
     
     canvas.setAttribute('width', canvasSize);
     canvas.setAttribute('height', canvasSize);
     
     elementsSize = canvasSize / 10;
+    elementsSize = Number(elementsSize.toFixed(2))
 
     playerPosition.x = elementsSize * (playerPositionRowCol.x + 1) + 3;
     playerPosition.y = elementsSize * (playerPositionRowCol.y + 1) - 7;
@@ -112,7 +113,6 @@ function startGame() {
             game.fillText(emoji, posX, posY)     
         });
     });
-    console.log('startGame', {playerPositionRowCol});
     movePlayer()
 }
 
@@ -132,7 +132,6 @@ function movePlayer() {
     });
 
     if (bombCollision) {
-        console.log(bombCollision);
         levelFail();
     }
 
@@ -157,7 +156,6 @@ function levelFail () {
         lives = 3;
         timeStart = undefined;
     }
-    console.log('entre levelFail');
     playerPosition.x = undefined;
     playerPosition.y = undefined;
     startGame();
@@ -254,7 +252,6 @@ function moveUp() {
         playerPositionRowCol.y = ((playerPosition.y + 7) / elementsSize) - 1;
     }
     startGame();
-    console.log('moveUp', {playerPositionRowCol});
 }
 
 function moveLeft() {
@@ -263,8 +260,7 @@ function moveLeft() {
         playerPositionRowCol.x = ((playerPosition.x - 3) / elementsSize) - 1;
         playerPositionRowCol.y = ((playerPosition.y + 7) / elementsSize) - 1;      
     }
-    startGame();
-    console.log('moveLeft', {playerPositionRowCol});    
+    startGame();    
 }
 
 function moveRight() {
@@ -274,7 +270,6 @@ function moveRight() {
         playerPositionRowCol.y = ((playerPosition.y + 7) / elementsSize) - 1;     
     }
     startGame();
-    console.log('moveRight', {playerPositionRowCol});
 }
 
 function moveDown() {
@@ -284,7 +279,6 @@ function moveDown() {
         playerPositionRowCol.y = ((playerPosition.y + 7) / elementsSize) - 1;        
     }
     startGame();
-    console.log('moveDown', {playerPositionRowCol});
 }
 
 
