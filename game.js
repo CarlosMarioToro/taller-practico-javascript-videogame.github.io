@@ -26,6 +26,7 @@ let timePlayer;
 let timeInterval;
 let colLast;
 let rowLast;
+let timer;
 
 let bombPosition = [];
 
@@ -120,19 +121,38 @@ function movePlayer() {
     const giftCollisionX = playerPosition.x.toFixed(3) == giftPosition.x.toFixed(3);    
     const giftCollisionY = playerPosition.y.toFixed(3) == giftPosition.y.toFixed(3);    
     const giftCollision = giftCollisionX && giftCollisionY;
+    let bombCollisionX;
+    let bombCollisionY;
+    let bombX;
+    let bombY;
 
     if (giftCollision) {
         levelWin();
     }
 
     const bombCollision = bombPosition.find(bomb => {
-        const bombCollisionX = bomb.x.toFixed(3) == playerPosition.x.toFixed(3);
-        const bombCollisionY = bomb.y.toFixed(3) == playerPosition.y.toFixed(3);
+        bombX = bomb.x;
+        bombY = bomb.y;
+        bombCollisionX = bomb.x.toFixed(3) == playerPosition.x.toFixed(3);
+        bombCollisionY = bomb.y.toFixed(3) == playerPosition.y.toFixed(3);
         return bombCollisionX && bombCollisionY;
     });
 
     if (bombCollision) {
-        levelFail();
+        setTimeout(function(){
+            game.fillText(emojis['BOMB_COLLISION'], bombX - 10, bombY);
+        }, 50);        
+
+        bombPosition.forEach((rowX, rowXI) => {
+            timer = setTimeout(() => {                    
+                console.log(bombPosition.length, rowXI, timer, playerPosition);
+                game.fillText(emojis['BOMB_COLLISION'], rowX.x - 10, rowX.y);
+            }, (rowXI + 1) * 70);
+        });
+        
+        setTimeout(() => {
+            levelFail();
+        }, bombPosition.length * 75);
     }
 
     game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
@@ -140,11 +160,6 @@ function movePlayer() {
 
 function levelWin() {
     level++;
-    // if (level == maps.length) {
-    //     level = 0;
-    //     lives++;
-    //     console.log('entre levelWin');
-    // }
     startGame();
 }
 
@@ -158,7 +173,9 @@ function levelFail () {
     }
     playerPosition.x = undefined;
     playerPosition.y = undefined;
-    startGame();
+    // setTimeout(() => {
+        startGame();
+    // }, bombPosition.length * 100);
 }
 
 function gameWin() {
@@ -179,6 +196,9 @@ function gameWin() {
         localStorage.setItem('record_time', playerTime);
         pResult.innerHTML = 'Primera vez? Muy bien, pero ahora trata de superar tu tiempo :)';
     }
+    level = 0;
+    lives++;
+    startGame();
 }
 
 function showLives() {
@@ -246,6 +266,8 @@ window.addEventListener("keydown", (e) => {
 });
 
 function moveUp() {
+    console.log(timer);
+    clearTimeout(timer);
     if ((playerPosition.y - elementsSize - 4) > 0) {
         playerPosition.y -= elementsSize;        
         playerPositionRowCol.x = ((playerPosition.x - 3) / elementsSize) - 1;
